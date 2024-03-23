@@ -29,9 +29,9 @@ module.exports = app => {
     });
 
     route.post((req, res) => {
-        
+
         if (!app.utils.validator.user(app, req, res)) return false;
-        
+
         db.insert(req.body, (err, user)=>{
 
             if (err) {
@@ -46,24 +46,26 @@ module.exports = app => {
 
     });
 
-    let routeId = app.route('/users/:id');
+    app.get('/users/:index', (req, res) => {
+        const index = parseInt(req.params.index); // Aqui utilizei o parametro req para chamar o index e armazenei o index na variavel
 
-    routeId.get((req, res) => {
-
-        db.findOne({_id:req.params.id}).exec((err, user)=>{
-
+        db.find({}).exec((err, users) => {
             if (err) {
                 app.utils.error.send(err, req, res);
-            } else {
-                res.status(200).json(user);
+                return;
             }
 
+            if (index >= 0 && index < users.length) {
+                res.status(200).json(users[index]);
+            } else {
+                res.status(404).json({ error: 'Usuário não encontrado' });
+            }
         });
-
     });
 
-    routeId.put((req, res) => {
-        
+
+    route.put((req, res) => {
+
         if (!app.utils.validator.user(app, req, res)) return false;
 
         db.update({ _id: req.params.id }, req.body, err => {
@@ -77,8 +79,8 @@ module.exports = app => {
         });
 
     });
-    
-    routeId.delete((req, res)=>{
+
+    route.delete((req, res)=>{
 
         db.remove({ _id: req.params.id }, {}, err=>{
 
